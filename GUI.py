@@ -11,13 +11,16 @@ class GUI:
         self.init_algorithm()
 
         self.root = TkinterDnD.Tk()
-        self.root.title("Hello TkInter!")
+        self.root.title("FromPolicyToGraph")
         self.root.grid_columnconfigure(0, weight=1)
         self.root.grid_rowconfigure(0, weight=1)
 
         self.filename = StringVar(value="")
-        self.firewall = StringVar(value="")
-        self.algorithm = StringVar(value="")
+        self.firewall = StringVar(value="fortigate")
+        self.algorithm = StringVar(value="layout_lgl")
+        self.width = StringVar(value="2048")
+        self.height = StringVar(value="2048")
+        self.msgError = StringVar(value="")
 
         self.mainframe = ttk.Frame(self.root, borderwidth=5, padding=(5, 5, 12, 12))
         self.mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
@@ -38,28 +41,52 @@ class GUI:
         self.comboAlgorithm = ttk.Combobox(self.mainframe, textvariable=self.algorithm)
         self.comboAlgorithm['values'] = tuple(self.algorithms.keys())
 
+        # size
+        self.labelWidth = ttk.Label(self.mainframe, text='width:')
+        self.entryWidth = ttk.Entry(self.mainframe, textvariable=self.width)
+        self.labelHeight = ttk.Label(self.mainframe, text='height:')
+        self.entryHeight = ttk.Entry(self.mainframe, textvariable=self.height)
+
+        # label error
+        self.labelError = ttk.Label(self.mainframe, text='')
+        self.labelError.config(textvariable=self.msgError)
+
         # button
         self.btnOK = ttk.Button(self.mainframe, text="Okay", command=self.btnOKClick)
 
         self.lbFilename.grid(column=0, row=0, rowspan=6, padx=10)
         self.radioFirewallFortigate.grid(column=1, row=0, sticky=W, pady=(0, 10))
         self.comboAlgorithm.grid(column=1, row=1, pady=(0, 10))
-        self.btnOK.grid(column=1, row=2, sticky=E)
+        self.labelWidth.grid(column=1, row=2, pady=(0, 0))
+        self.entryWidth.grid(column=2, row=2, pady=(0, 5))
+        self.labelHeight.grid(column=1, row=3, pady=(0, 0))
+        self.entryHeight.grid(column=2, row=3, pady=(0, 5))
+        self.labelError.grid(column=0, row=7, pady=(0, 5))
+        self.btnOK.grid(column=1, row=7, sticky=E)
 
     def run(self):
         self.root.mainloop()
 
     def btnOKClick(self):
-        print("btnOKClick")
-        print(FromPolicyToGraph.fromPolicyToGraph(str(self.filename.get()),
-                                          str(self.firewall.get()),
-                                          str(self.algorithms[self.algorithm.get()])))
+        try:
+            self.msgError.set('')
+            FromPolicyToGraph.fromPolicyToGraph(str(self.filename.get()),
+                                                str(self.firewall.get()),
+                                                str(self.algorithms[self.algorithm.get()]),
+                                                int(self.width.get()),
+                                                int(self.height.get()))
+        except:
+            self.manageError(1)
+
+    def manageError(self, error):
+        if error == 1:
+            self.msgError.set('Si è verificato un errore')
 
     def lbFilenameDnD(self, string):
         print("lbFilenameDnD")
         self.filename.set(string)
         self.lbFilename.delete(0, END)
-        self.lbFilename.insert(0, string)
+        self.lbFilename.insert(0, os.path.basename(string))
 
     def init_algorithm(self):
         self.algorithms = {

@@ -1,3 +1,6 @@
 venv/
 conf/
 .idea/
+/main.spec
+dist/
+build/

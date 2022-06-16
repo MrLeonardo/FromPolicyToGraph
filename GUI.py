@@ -1,12 +1,15 @@
+from ManageError import *
 from tkinter import *
 from tkinter import ttk
-from FromPolicyToGraph import *
 from tkinterdnd2 import DND_FILES, TkinterDnD, tkdnd
+from FromPolicyToGraph import *
 
 
 class GUI:
 
     def __init__(self):
+        self.managererror = ManageError()
+
         self.algorithms = None
         self.init_algorithm()
 
@@ -70,17 +73,34 @@ class GUI:
     def btnOKClick(self):
         try:
             self.msgError.set('')
-            FromPolicyToGraph.fromPolicyToGraph(str(self.filename.get()),
-                                                str(self.firewall.get()),
-                                                str(self.algorithms[self.algorithm.get()]),
-                                                int(self.width.get()),
-                                                int(self.height.get()))
+            error = self.validateInput()
+            if not error:
+                FromPolicyToGraph.fromPolicyToGraph(str(self.filename.get()),
+                                                    str(self.firewall.get()),
+                                                    str(self.algorithms[self.algorithm.get()]),
+                                                    int(self.width.get()),
+                                                    int(self.height.get()))
+            else:
+                self.manageError(error)
         except:
-            self.manageError(1)
+            self.manageError(self.managererror.GENERIC_ERROR)
 
-    def manageError(self, error):
-        if error == 1:
-            self.msgError.set('Si è verificato un errore')
+    def validateInput(self):
+        error = 0
+        if not self.filename.get():
+            error = self.managererror.FILE_NOT_FOUND
+        elif not self.firewall.get():
+            error = self.managererror.FIREWALL_NOT_FOUND
+        elif not self.algorithm.get():
+            error = self.managererror.ALGORITHM_NOT_FOUND
+        elif not self.width.get():
+            error = self.managererror.EMPTY_WIDTH
+        elif not self.height.get():
+            error = self.managererror.EMPTY_HEIGHT
+        return error
+
+    def manageError(self, codeError):
+        self.msgError.set(self.managererror.get(codeError))
 
     def lbFilenameDnD(self, string):
         print("lbFilenameDnD")
